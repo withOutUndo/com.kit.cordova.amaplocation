@@ -71,7 +71,7 @@ public class LocationPlugin extends CordovaPlugin {
 
     private void getLocation() {
         locationOption = new AMapLocationClientOption();
-        locationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);// 使用签到定位场景
+        //locationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);// 使用签到定位场景
         locationOption.setLocationCacheEnable(false);
         locationClient.setLocationOption(locationOption); // 设置定位参数
         // 设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
