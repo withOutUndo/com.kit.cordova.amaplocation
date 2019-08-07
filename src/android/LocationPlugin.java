@@ -66,6 +66,12 @@ public class LocationPlugin extends CordovaPlugin {
             }
             return true;
         }
+        if ("stoplocation".equals(action)) {
+            if (locationClient != null) {
+                locationClient.stopLocation();
+            }
+            return true;
+        }
         return false;
     }
 
@@ -73,6 +79,8 @@ public class LocationPlugin extends CordovaPlugin {
         locationOption = new AMapLocationClientOption();
         //locationOption.setLocationPurpose(AMapLocationClientOption.AMapLocationPurpose.SignIn);// 使用签到定位场景
         locationOption.setLocationCacheEnable(false);
+        locationOption.setInterval(10000);
+        locationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
         locationClient.setLocationOption(locationOption); // 设置定位参数
         // 设置场景模式后最好调用一次stop，再调用start以保证场景模式生效
         locationClient.stopLocation();
@@ -103,6 +111,8 @@ public class LocationPlugin extends CordovaPlugin {
                     int locationType = amapLocation.getLocationType();//获取当前定位结果来源 定位类型对照表: http://lbs.amap.com/api/android-location-sdk/guide/utilities/location-type/
                     Double latitude = amapLocation.getLatitude();//获取纬度
                     Double longitude = amapLocation.getLongitude();//获取经度
+                    float bearing = amapLocation.getBearing();
+
                     float accuracy = amapLocation.getAccuracy();//获取精度信息
                     String address = amapLocation.getAddress();//地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息。
                     String country = amapLocation.getCountry();//国家信息
@@ -118,9 +128,11 @@ public class LocationPlugin extends CordovaPlugin {
                     int gpsAccuracyStatus = amapLocation.getGpsAccuracyStatus();//获取GPS的当前状态
                     long time = amapLocation.getTime();  // 时间
                     JSONObject jo = new JSONObject();
+                    Log.e("11111111111111111111111", "onLocationChanged: " + longitude + "___" + latitude + "___" + accuracy);
                     try {
                         jo.put("locationType", locationType);
                         jo.put("latitude", latitude);
+                        jo.put("bearing", bearing);
                         jo.put("longitude", longitude);
                         jo.put("accuracy", accuracy);
                         jo.put("address", address);
@@ -140,13 +152,19 @@ public class LocationPlugin extends CordovaPlugin {
                         jo = null;
                         e.printStackTrace();
                     }
-                    callbackContext.success(jo);
+
+                    PluginResult r = new PluginResult(PluginResult.Status.OK, jo);
+                    r.setKeepCallback(true);
+                    callbackContext.sendPluginResult(r);
                 } else {
                     //定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。
                     Log.e("AmapError", "location Error, ErrCode:"
                             + amapLocation.getErrorCode() + ", errInfo:"
                             + amapLocation.getErrorInfo());
-                    callbackContext.error(amapLocation.getErrorInfo());
+
+                    PluginResult r = new PluginResult(PluginResult.Status.ERROR, amapLocation.getErrorInfo());
+                    r.setKeepCallback(true);
+                    callbackContext.sendPluginResult(r);
                 }
             }
         }
